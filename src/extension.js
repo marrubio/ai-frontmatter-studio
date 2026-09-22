@@ -269,7 +269,7 @@ function getAgentEditorHtml(webview, context, state) {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src ${webview.cspSource}; img-src ${webview.cspSource} https: data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src ${webview.cspSource}; img-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Frontmatter Studio</title>
   <style>
@@ -676,8 +676,7 @@ async function createAgent(context, provider) {
       return;
     }
   } catch (error) {
-    const notFound = error instanceof vscode.FileSystemError
-      && error.name === vscode.FileSystemError.FileNotFound(vscode.Uri.file('/tmp/missing')).name;
+    const notFound = error && typeof error === 'object' && error.code === 'FileNotFound';
     if (!notFound) {
       throw error;
     }

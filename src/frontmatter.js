@@ -352,7 +352,7 @@ function buildFrontmatterObject(state) {
   if (state.fields.target.enabled && state.fields.target.value) {
     frontmatter.target = state.fields.target.value;
   }
-  if (state.fields['mcp-servers'].enabled) {
+  if (state.fields['mcp-servers'].enabled && state.fields['mcp-servers'].yamlText.trim()) {
     frontmatter['mcp-servers'] = parseYamlOrDefault(state.fields['mcp-servers'].yamlText, []);
   }
   if (state.fields.handoffs.enabled) {
@@ -378,15 +378,18 @@ function buildFrontmatterObject(state) {
         return handoff;
       });
   }
-  if (state.fields.hooks.enabled) {
+  if (state.fields.hooks.enabled && state.fields.hooks.yamlText.trim()) {
     frontmatter.hooks = parseYamlOrDefault(state.fields.hooks.yamlText, {});
   }
   if (state.fields.metadata.enabled) {
-    frontmatter.metadata = {};
+    const metadata = {};
     for (const entry of state.fields.metadata.items || []) {
       if (entry && `${entry.key || ''}`.trim()) {
-        frontmatter.metadata[`${entry.key}`.trim()] = `${entry.value || ''}`;
+        metadata[`${entry.key}`.trim()] = `${entry.value || ''}`;
       }
+    }
+    if (Object.keys(metadata).length > 0) {
+      frontmatter.metadata = metadata;
     }
   }
 

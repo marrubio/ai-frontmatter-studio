@@ -173,3 +173,16 @@ test('serializeAgentDocument omits blank handoff fields', () => {
 
   assert.deepEqual(frontmatter.handoffs, [{ agent: 'impl', send: false }]);
 });
+
+test('serializeAgentDocument omits empty optional object and array properties', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.fields['mcp-servers'] = { enabled: true, yamlText: '' };
+  state.fields.hooks = { enabled: true, yamlText: '' };
+  state.fields.metadata = { enabled: true, items: [] };
+
+  const frontmatter = buildFrontmatterObject(state);
+
+  assert.equal('mcp-servers' in frontmatter, false);
+  assert.equal('hooks' in frontmatter, false);
+  assert.equal('metadata' in frontmatter, false);
+});
