@@ -90,3 +90,32 @@ test('serializeAgentDocument preserves structured values and omits disabled fiel
   assert.equal(frontmatter['future-property'], 'enabled');
   assert.match(serialized, /## Instructions/);
 });
+
+test('validateState rejects invalid boolean scalar values from YAML', () => {
+  const state = parseAgentDocument(`---
+description: Test
+user-invocable: 'false'
+handoffs:
+  - label: Next
+    agent: impl
+    prompt: Go
+    send: 'false'
+---
+`);
+
+  const message = validateState(state).join(' ');
+  assert.match(message, /user-invocable must be a boolean/);
+  assert.match(message, /handoffs\.send must be a boolean/);
+});
+
+test('validateState rejects invalid YAML-backed top-level shapes', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.fields['mcp-servers'] = { enabled: true, yamlText: 'server' };
+  state.fields.hooks = { enabled: true, yamlText: 'true' };
+  state.extraPropertiesYaml = '- invalid';
+
+  const message = validateState(state).join(' ');
+  assert.match(message, /mcp-servers must be a YAML array/);
+  assert.match(message, /hooks must be a YAML object/);
+  assert.match(message, /Extra properties must be a YAML object/);
+});

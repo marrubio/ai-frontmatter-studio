@@ -224,6 +224,14 @@ async function openAgentEditor(context, uri, provider) {
   panel.webview.html = getAgentEditorHtml(panel.webview, context, state);
 
   panel.webview.onDidReceiveMessage(async (message) => {
+    if (message?.type === 'openDoc') {
+      const target = message.target === 'github'
+        ? 'https://docs.github.com/en/copilot/reference/custom-agents-configuration'
+        : 'https://code.visualstudio.com/docs/agent-customization/custom-agents';
+      await vscode.env.openExternal(vscode.Uri.parse(target));
+      return;
+    }
+
     if (message?.type !== 'save') {
       return;
     }
@@ -303,8 +311,8 @@ function getAgentEditorHtml(webview, context, state) {
     <h2>Optional properties</h2>
     <div id="propertyToggles"></div>
     <div class="footer-links muted">
-      <a href="https://docs.github.com/en/copilot/reference/custom-agents-configuration">GitHub Copilot docs</a>
-      <a href="https://code.visualstudio.com/docs/agent-customization/custom-agents">VS Code docs</a>
+      <button class="secondary" type="button" data-open-doc="github">GitHub Copilot docs</button>
+      <button class="secondary" type="button" data-open-doc="vscode">VS Code docs</button>
     </div>
   </div>
 
@@ -520,6 +528,12 @@ function getAgentEditorHtml(webview, context, state) {
         });
       });
 
+      document.querySelectorAll('[data-open-doc]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          vscode.postMessage({ type: 'openDoc', target: event.target.getAttribute('data-open-doc') });
+        });
+      });
+
       document.querySelectorAll('[data-handoff]').forEach((input) => {
         const field = input.getAttribute('data-handoff');
         input.addEventListener(field === 'send' ? 'change' : 'input', (event) => {
@@ -626,6 +640,26 @@ async function createAgent(context, provider) {
   const targetDir = vscode.Uri.joinPath(workspaceFolder.uri, '.github', 'agents');
   await vscode.workspace.fs.createDirectory(targetDir);
   const fileUri = vscode.Uri.joinPath(targetDir, fileName);
+
+  try {
+    await vscode.workspace.fs.stat(fileUri);
+    const action = await vscode.window.showWarningMessage(
+      `${fileName} already exists.`,
+      'Open existing',
+      'Overwrite'
+    );
+
+    if (action === 'Open existing') {
+      await openAgentEditor(context, fileUri, provider);
+      return;
+    }
+
+    if (action !== 'Overwrite') {
+      return;
+    }
+  } catch (error) {
+    // File does not exist yet.
+  }
 
   const initialState = createEmptyState(fileUri.fsPath);
   initialState.fields.description.value = 'Describe what this agent does.';

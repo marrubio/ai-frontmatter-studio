@@ -191,13 +191,13 @@ function parseAgentDocument(content, uriPath = '') {
     state.fields.model = { enabled: true, items: normalizeList(parsed.model) };
   }
   if (parsed['user-invocable'] !== undefined) {
-    state.fields['user-invocable'] = { enabled: true, value: Boolean(parsed['user-invocable']) };
+    state.fields['user-invocable'] = { enabled: true, value: parsed['user-invocable'] };
   }
   if (parsed['disable-model-invocation'] !== undefined) {
-    state.fields['disable-model-invocation'] = { enabled: true, value: Boolean(parsed['disable-model-invocation']) };
+    state.fields['disable-model-invocation'] = { enabled: true, value: parsed['disable-model-invocation'] };
   }
   if (parsed.infer !== undefined) {
-    state.fields.infer = { enabled: true, value: Boolean(parsed.infer) };
+    state.fields.infer = { enabled: true, value: parsed.infer };
   }
   if (parsed.target !== undefined) {
     state.fields.target = { enabled: true, value: `${parsed.target}` };
@@ -213,7 +213,7 @@ function parseAgentDocument(content, uriPath = '') {
         label: `${handoff?.label ?? ''}`,
         agent: `${handoff?.agent ?? ''}`,
         prompt: `${handoff?.prompt ?? ''}`,
-        send: Boolean(handoff?.send),
+        send: handoff?.send === undefined ? false : handoff.send,
         model: `${handoff?.model ?? ''}`
       }))
     };
@@ -235,6 +235,18 @@ function validateState(state) {
     errors.push('Description is required.');
   }
 
+  for (const key of ['user-invocable', 'disable-model-invocation', 'infer']) {
+    if (state.fields[key].enabled && typeof state.fields[key].value !== 'boolean') {
+      errors.push(`${key} must be a boolean.`);
+    }
+  }
+
+  for (const handoff of state.fields.handoffs.items || []) {
+    if (handoff && handoff.send !== undefined && typeof handoff.send !== 'boolean') {
+      errors.push('handoffs.send must be a boolean.');
+    }
+  }
+
   if (state.fields.tools.enabled && state.fields.agents.enabled && state.fields.agents.mode === 'selected' && state.fields.agents.items.length > 0) {
     const selectedTools = state.fields.tools.mode === 'selected' ? state.fields.tools.items : state.fields.tools.mode === 'all' ? ['*'] : [];
     if (!(selectedTools.includes('*') || selectedTools.includes('agent'))) {
@@ -243,19 +255,28 @@ function validateState(state) {
   }
 
   try {
-    parseYamlOrDefault(state.fields['mcp-servers'].yamlText, []);
+    const mcpServers = parseYamlOrDefault(state.fields['mcp-servers'].yamlText, []);
+    if (state.fields['mcp-servers'].enabled && !Array.isArray(mcpServers)) {
+      errors.push('mcp-servers must be a YAML array.');
+    }
   } catch (error) {
     errors.push(`Invalid mcp-servers YAML: ${error.message}`);
   }
 
   try {
-    parseYamlOrDefault(state.fields.hooks.yamlText, {});
+    const hooks = parseYamlOrDefault(state.fields.hooks.yamlText, {});
+    if (state.fields.hooks.enabled && (Array.isArray(hooks) || typeof hooks !== 'object' || hooks === null)) {
+      errors.push('hooks must be a YAML object.');
+    }
   } catch (error) {
     errors.push(`Invalid hooks YAML: ${error.message}`);
   }
 
   try {
-    parseYamlOrDefault(state.extraPropertiesYaml, {});
+    const extra = parseYamlOrDefault(state.extraPropertiesYaml, {});
+    if (state.extraPropertiesYaml.trim() && (Array.isArray(extra) || typeof extra !== 'object' || extra === null)) {
+      errors.push('Extra properties must be a YAML object.');
+    }
   } catch (error) {
     errors.push(`Invalid extra properties YAML: ${error.message}`);
   }
@@ -305,13 +326,13 @@ function buildFrontmatterObject(state) {
     }
   }
   if (state.fields['user-invocable'].enabled) {
-    frontmatter['user-invocable'] = Boolean(state.fields['user-invocable'].value);
+    frontmatter['user-invocable'] = state.fields['user-invocable'].value;
   }
   if (state.fields['disable-model-invocation'].enabled) {
-    frontmatter['disable-model-invocation'] = Boolean(state.fields['disable-model-invocation'].value);
+    frontmatter['disable-model-invocation'] = state.fields['disable-model-invocation'].value;
   }
   if (state.fields.infer.enabled) {
-    frontmatter.infer = Boolean(state.fields.infer.value);
+    frontmatter.infer = state.fields.infer.value;
   }
   if (state.fields.target.enabled && state.fields.target.value) {
     frontmatter.target = state.fields.target.value;
