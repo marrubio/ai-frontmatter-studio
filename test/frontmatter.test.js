@@ -148,3 +148,26 @@ test('serializeAgentDocument preserves multiple prioritized models', () => {
 
   assert.deepEqual(frontmatter.model, ['GPT-5 (copilot)', 'Claude Sonnet 4.5 (copilot)']);
 });
+
+test('serializeAgentDocument omits empty selected tools and agents', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.fields.tools = { enabled: true, mode: 'selected', items: [] };
+  state.fields.agents = { enabled: true, mode: 'selected', items: [] };
+
+  const frontmatter = buildFrontmatterObject(state);
+
+  assert.equal('tools' in frontmatter, false);
+  assert.equal('agents' in frontmatter, false);
+});
+
+test('serializeAgentDocument omits blank handoff fields', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.fields.handoffs = {
+    enabled: true,
+    items: [{ label: '', agent: 'impl', prompt: '', send: false, model: '' }]
+  };
+
+  const frontmatter = buildFrontmatterObject(state);
+
+  assert.deepEqual(frontmatter.handoffs, [{ agent: 'impl', send: false }]);
+});

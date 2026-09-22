@@ -439,7 +439,7 @@ function getAgentEditorHtml(webview, context, state) {
     function render() {
       renderPropertyToggles();
       const cards = [];
-      cards.push('<div class="card"><h2>description <span class="badge">required</span></h2><div class="muted">' + propertyDocs.description + '</div><div class="field"><textarea id="description">' + escapeHtml(state.fields.description.value) + '</textarea></div></div>');
+      cards.push('<div class="card"><h2>description <span class="badge">required</span></h2><div class="muted" id="description-help">' + propertyDocs.description + '</div><div class="field"><textarea id="description" aria-describedby="description-help">' + escapeHtml(state.fields.description.value) + '</textarea></div></div>');
 
       if (state.fields.name.enabled) {
         cards.push('<div class="card"><h2>name</h2><div class="muted">' + propertyDocs.name + '</div><div class="field"><input type="text" id="name" value="' + escapeHtml(state.fields.name.value) + '" /></div></div>');
@@ -676,8 +676,7 @@ async function createAgent(context, provider) {
       return;
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : '';
-    const notFound = message.toLowerCase().includes('not found') || message.toLowerCase().includes('entrynotfound');
+    const notFound = error && typeof error === 'object' && error.code === 'FileNotFound';
     if (!notFound) {
       throw error;
     }

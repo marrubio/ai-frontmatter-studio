@@ -314,7 +314,10 @@ function buildFrontmatterObject(state) {
     } else if (state.fields.tools.mode === 'none') {
       frontmatter.tools = [];
     } else {
-      frontmatter.tools = normalizeList(state.fields.tools.items);
+      const tools = normalizeList(state.fields.tools.items);
+      if (tools.length > 0) {
+        frontmatter.tools = tools;
+      }
     }
   }
   if (state.fields.agents.enabled) {
@@ -323,7 +326,10 @@ function buildFrontmatterObject(state) {
     } else if (state.fields.agents.mode === 'none') {
       frontmatter.agents = [];
     } else {
-      frontmatter.agents = normalizeList(state.fields.agents.items);
+      const agents = normalizeList(state.fields.agents.items);
+      if (agents.length > 0) {
+        frontmatter.agents = agents;
+      }
     }
   }
   if (state.fields.model.enabled) {
@@ -353,11 +359,16 @@ function buildFrontmatterObject(state) {
     frontmatter.handoffs = (state.fields.handoffs.items || [])
       .filter((item) => item && (item.label || item.agent || item.prompt || item.model || item.send))
       .map((item) => {
-        const handoff = {
-          label: `${item.label || ''}`.trim(),
-          agent: `${item.agent || ''}`.trim(),
-          prompt: `${item.prompt || ''}`.trim()
-        };
+        const handoff = {};
+        if (`${item.label || ''}`.trim()) {
+          handoff.label = `${item.label}`.trim();
+        }
+        if (`${item.agent || ''}`.trim()) {
+          handoff.agent = `${item.agent}`.trim();
+        }
+        if (`${item.prompt || ''}`.trim()) {
+          handoff.prompt = `${item.prompt}`.trim();
+        }
         if (typeof item.send === 'boolean') {
           handoff.send = item.send;
         }
