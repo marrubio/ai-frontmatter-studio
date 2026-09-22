@@ -60,6 +60,29 @@ future-flag: yes
   assert.match(state.extraPropertiesYaml, /future-flag/);
 });
 
+test('parseAgentDocument loads frontmatter with Windows line endings', () => {
+  const input = '---\r\n'
+    + 'description: "Use when running a local agentic workflow."\r\n'
+    + 'name: "local-feature-orchestrator"\r\n'
+    + 'tools: [read, search, edit, agent, todo]\r\n'
+    + 'reasoning-effort: high\r\n'
+    + 'agents: [feature-planner, feature-implementer, feature-validator]\r\n'
+    + 'model: GPT-5.6 Luna (copilot)\r\n'
+    + '---\r\n'
+    + '# Workflow\r\n\r\nCoordinate the feature.\r\n';
+
+  const state = parseAgentDocument(input, '/workspace/local-feature-orchestrator.agent.md');
+
+  assert.equal(state.hasFrontmatter, true);
+  assert.equal(state.fields.name.value, 'local-feature-orchestrator');
+  assert.equal(state.fields.description.value, 'Use when running a local agentic workflow.');
+  assert.deepEqual(state.fields.tools.items, ['read', 'search', 'edit', 'agent', 'todo']);
+  assert.deepEqual(state.fields.agents.items, ['feature-planner', 'feature-implementer', 'feature-validator']);
+  assert.deepEqual(state.fields.model.items, ['GPT-5.6 Luna (copilot)']);
+  assert.match(state.extraPropertiesYaml, /reasoning-effort/);
+  assert.equal(state.body, '# Workflow\r\n\r\nCoordinate the feature.\r\n');
+});
+
 test('buildFrontmatterObject enforces agent tool when agents are selected', () => {
   const state = parseAgentDocument('---\ndescription: Test\n---\n');
   state.fields.tools = { enabled: true, mode: 'selected', items: ['search'] };

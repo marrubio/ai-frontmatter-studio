@@ -36,20 +36,22 @@ const KNOWN_KEYS = new Set([
 ]);
 
 function splitFrontmatter(content) {
-  if (!content.startsWith('---\n')) {
+  const openingMarker = content.match(/^\uFEFF?---\r?\n/);
+  if (!openingMarker) {
     return { frontmatterText: '', body: content, hasFrontmatter: false };
   }
 
-  const endMarker = '\n---\n';
-  const endIndex = content.indexOf(endMarker, 4);
+  const endMarker = /\r?\n---(?:\r?\n|$)/g;
+  endMarker.lastIndex = openingMarker[0].length;
+  const endMatch = endMarker.exec(content);
 
-  if (endIndex === -1) {
+  if (!endMatch) {
     return { frontmatterText: '', body: content, hasFrontmatter: false };
   }
 
   return {
-    frontmatterText: content.slice(4, endIndex),
-    body: content.slice(endIndex + endMarker.length),
+    frontmatterText: content.slice(openingMarker[0].length, endMatch.index),
+    body: content.slice(endMatch.index + endMatch[0].length),
     hasFrontmatter: true
   };
 }

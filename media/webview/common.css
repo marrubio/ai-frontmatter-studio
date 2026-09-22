@@ -1,0 +1,30 @@
+:root { color-scheme: light dark; }
+body { font-family: var(--vscode-font-family); padding: 16px; max-width: 1100px; margin: 0 auto; color: var(--vscode-foreground); }
+h1, h2, h3 { margin: 0 0 12px; }
+.actions { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.actions > div:first-child { flex: 1; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+.full-width { grid-column: 1 / -1; }
+.card { border: 1px solid var(--vscode-panel-border); border-radius: 8px; padding: 12px; background: color-mix(in srgb, var(--vscode-editor-background) 96%, var(--vscode-focusBorder)); }
+.field { margin-bottom: 10px; }
+label { display: block; font-weight: 600; margin-bottom: 4px; }
+input[type="text"], textarea, select { width: 100%; box-sizing: border-box; background: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 1px solid var(--vscode-input-border, var(--vscode-panel-border)); border-radius: 4px; padding: 8px; }
+textarea { min-height: 110px; resize: vertical; }
+.inline { display: flex; gap: 8px; align-items: center; }
+.inline > * { flex: 1; }
+.badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); }
+.muted { opacity: .85; font-size: 12px; }
+.list-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px; }
+button { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 4px; padding: 7px 12px; cursor: pointer; }
+button.secondary { background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); }
+.property-toggle { display: inline-flex; gap: 6px; align-items: center; margin: 0 10px 8px 0; }
+.status { margin-left: auto; }
+.error { color: var(--vscode-errorForeground); }
+.body-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.markdown-preview { min-height: 110px; padding: 8px; overflow-wrap: anywhere; }
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { margin: 0 0 10px; }
+.markdown-preview p { margin: 0 0 10px; }
+.markdown-preview ul { margin: 0 0 10px; padding-left: 22px; }
+.markdown-preview pre { overflow: auto; padding: 10px; background: var(--vscode-textCodeBlock-background); }
+.markdown-preview code { font-family: var(--vscode-editor-font-family); }
+@media (max-width: 760px) { .body-grid { grid-template-columns: 1fr; } }
