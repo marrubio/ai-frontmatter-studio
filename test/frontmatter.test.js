@@ -153,11 +153,13 @@ test('serializeAgentDocument omits empty selected tools and agents', () => {
   const state = parseAgentDocument('---\ndescription: Test\n---\n');
   state.fields.tools = { enabled: true, mode: 'selected', items: [] };
   state.fields.agents = { enabled: true, mode: 'selected', items: [] };
+  state.fields.model = { enabled: true, items: [] };
 
   const frontmatter = buildFrontmatterObject(state);
 
   assert.equal('tools' in frontmatter, false);
   assert.equal('agents' in frontmatter, false);
+  assert.equal('model' in frontmatter, false);
 });
 
 test('serializeAgentDocument omits blank handoff fields', () => {

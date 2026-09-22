@@ -336,7 +336,7 @@ function buildFrontmatterObject(state) {
     const models = normalizeList(state.fields.model.items);
     if (models.length === 1) {
       frontmatter.model = models[0];
-    } else {
+    } else if (models.length > 1) {
       frontmatter.model = models;
     }
   }
