@@ -14,6 +14,24 @@ function serializeState(value) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function getDisplayTitle(artifact, state) {
+  const name = state?.fields?.name?.value?.trim();
+  if (name) {
+    return name;
+  }
+
+  const fileName = state?.path ? path.basename(state.path) : '';
+  return fileName || artifact.title;
+}
+
 async function getArtifactEditorHtml(context, webview, artifact, state) {
   const [template, styles, renderer] = await Promise.all([
     readResource(context, path.join('media', 'webview', 'index.html')),
@@ -21,11 +39,12 @@ async function getArtifactEditorHtml(context, webview, artifact, state) {
     readResource(context, artifact.rendererPath)
   ]);
   const nonce = getNonce();
+  const title = escapeHtml(getDisplayTitle(artifact, state));
   const initial = serializeState({ state, ...artifact.initialData });
   const script = `const initial = JSON.parse(document.getElementById('initial-state').textContent);\n${renderer}`;
 
   return template
-    .replaceAll('{{TITLE}}', artifact.title)
+    .replaceAll('{{TITLE}}', title)
     .replaceAll('{{DESCRIPTION}}', artifact.description)
     .replaceAll('{{STYLE}}', styles)
     .replaceAll('{{STATE}}', initial)
@@ -45,9 +64,10 @@ async function openArtifactEditor(context, uri, provider, artifact) {
   }
 
   const state = artifact.parse(fileContent, uri.fsPath);
+  const displayTitle = getDisplayTitle(artifact, state);
   const panel = vscode.window.createWebviewPanel(
     `aiFrontmatterStudio.${artifact.key}Editor`,
-    `${artifact.title}: ${path.basename(uri.fsPath)}`,
+    `${displayTitle}: ${path.basename(uri.fsPath)}`,
     vscode.ViewColumn.One,
     { enableScripts: true }
   );
