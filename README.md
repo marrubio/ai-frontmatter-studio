@@ -33,6 +33,38 @@ npm test
 npm run lint
 ```
 
+## Probar la extensión en Visual Studio Code
+
+1. Instala las dependencias desde la terminal integrada:
+
+  ```bash
+  npm install
+  ```
+
+2. Pulsa `F5` o abre **Run and Debug** y selecciona **Run Extension**. VS Code abrirá una ventana **Extension Development Host** con la extensión cargada.
+
+3. En la ventana de desarrollo, crea un archivo `.github/agents/test.agent.md` con este contenido:
+
+  ```markdown
+  ---
+  name: Test Agent
+  description: A test agent for AI Frontmatter Studio
+  tools:
+    - read
+    - search
+  ---
+
+  You are a test agent.
+  ```
+
+4. Abre la vista **Copilot Assets** en la barra de actividad. El archivo debe aparecer dentro de **Agents**.
+
+5. Haz clic en el agente para abrir el editor visual, modifica un campo y pulsa **Save**. Comprueba que el archivo Markdown se actualizó.
+
+Para depurar la extensión, coloca puntos de interrupción en `src/extension.js` y recarga la ventana **Extension Development Host** con `Ctrl+R`.
+
+La extensión no requiere un paso de compilación. `npm install` es necesario porque el parser utiliza el paquete `yaml`.
+
 ## Referencias
 
 - GitHub Copilot custom agents: https://docs.github.com/en/copilot/reference/custom-agents-configuration

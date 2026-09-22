@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{NONCE}}';" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <style>{{STYLE}}</style>
+</head>
+<body>
+  <header class="actions">
+    <div>
+      <h1>{{TITLE}}</h1>
+      <div class="muted">{{DESCRIPTION}}</div>
+    </div>
+    <div class="status badge" id="status">Ready</div>
+    <button id="saveButton">Save</button>
+  </header>
+  <main id="artifactRoot"></main>
+  <script type="application/json" id="initial-state">{{STATE}}</script>
+  <script nonce="{{NONCE}}">
+    const vscode = acquireVsCodeApi();
+    {{SCRIPT}}
+  </script>
+</body>
+</html>

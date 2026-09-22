@@ -5,7 +5,7 @@
   "main": "src/extension.js",
   "scripts": {
     "test": "node --test",
-    "lint": "node --check src/*.js test/*.test.js"
+    "lint": "node --check src/extension.js && node --check src/frontmatter.js && node --check src/assets/assetProvider.js && node --check src/artifacts/agentArtifact.js && node --check src/editors/artifactEditor.js && node --check src/editors/agentEditor.js && node --check test/frontmatter.test.js && node --check media/artifacts/agent/editor.js"
   },
   "repository": {
     "type": "git",

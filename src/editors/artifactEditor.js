@@ -1,0 +1,94 @@
+const fs = require('fs/promises');
+const path = require('path');
+const vscode = require('vscode');
+
+async function readResource(context, resourcePath) {
+  return fs.readFile(path.join(context.extensionPath, resourcePath), 'utf8');
+}
+
+function getNonce() {
+  return Math.random().toString(36).slice(2);
+}
+
+function serializeState(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
+async function getArtifactEditorHtml(context, webview, artifact, state) {
+  const [template, styles, renderer] = await Promise.all([
+    readResource(context, path.join('media', 'webview', 'index.html')),
+    readResource(context, path.join('media', 'webview', 'common.css')),
+    readResource(context, artifact.rendererPath)
+  ]);
+  const nonce = getNonce();
+  const initial = serializeState({ state, ...artifact.initialData });
+  const script = `const initial = JSON.parse(document.getElementById('initial-state').textContent);\n${renderer}`;
+
+  return template
+    .replaceAll('{{TITLE}}', artifact.title)
+    .replaceAll('{{DESCRIPTION}}', artifact.description)
+    .replaceAll('{{STYLE}}', styles)
+    .replaceAll('{{STATE}}', initial)
+    .replaceAll('{{NONCE}}', nonce)
+    .replaceAll('{{SCRIPT}}', script);
+}
+
+async function openArtifactEditor(context, uri, provider, artifact) {
+  let fileContent;
+  try {
+    const document = await vscode.workspace.openTextDocument(uri);
+    fileContent = document.getText();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to read artifact file';
+    vscode.window.showErrorMessage(`Could not open ${path.basename(uri.fsPath)}: ${message}`);
+    return;
+  }
+
+  const state = artifact.parse(fileContent, uri.fsPath);
+  const panel = vscode.window.createWebviewPanel(
+    `aiFrontmatterStudio.${artifact.key}Editor`,
+    `${artifact.title}: ${path.basename(uri.fsPath)}`,
+    vscode.ViewColumn.One,
+    { enableScripts: true }
+  );
+
+  try {
+    panel.webview.html = await getArtifactEditorHtml(context, panel.webview, artifact, state);
+  } catch (error) {
+    vscode.window.showErrorMessage(error instanceof Error ? error.message : 'Failed to render artifact editor');
+    panel.dispose();
+    return;
+  }
+
+  panel.webview.onDidReceiveMessage(async (message) => {
+    if (message?.type === 'openDoc') {
+      if (message.url) {
+        await vscode.env.openExternal(vscode.Uri.parse(message.url));
+      }
+      return;
+    }
+
+    if (message?.type !== 'save') {
+      return;
+    }
+
+    try {
+      const errors = artifact.validate(message.state);
+      if (errors.length) {
+        vscode.window.showErrorMessage(errors.join(' '));
+        return;
+      }
+
+      await vscode.workspace.fs.writeFile(uri, Buffer.from(artifact.serialize(message.state), 'utf8'));
+      provider.refresh();
+      vscode.window.showInformationMessage(`Saved ${path.basename(uri.fsPath)}`);
+    } catch (error) {
+      vscode.window.showErrorMessage(error instanceof Error ? error.message : 'Failed to save artifact');
+    }
+  });
+}
+
+module.exports = {
+  getArtifactEditorHtml,
+  openArtifactEditor
+};
