@@ -10,7 +10,7 @@ const {
 
 const agentArtifact = {
   key: 'agent',
-  title: 'Agent Frontmatter Editor',
+  title: 'Agent',
   description: 'Visual editor for *.agent.md frontmatter.',
   rendererPath: path.join('media', 'artifacts', 'agent', 'editor.js'),
   initialData: {
