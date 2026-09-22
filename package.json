@@ -1,0 +1,74 @@
+{
+  "name": "ai-frontmatter-studio",
+  "version": "1.0.0",
+  "description": "Visual editor for AI agent frontmatter in Markdown, YAML, and JSON files.",
+  "main": "src/extension.js",
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check src/*.js test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://localhost:26831/marrubio/ai-frontmatter-studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "yaml": "^2.9.1"
+  },
+  "type": "commonjs",
+  "engines": {
+    "vscode": "^1.106.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:copilotAssets",
+    "onCommand:aiFrontmatterStudio.openAgent",
+    "onCommand:aiFrontmatterStudio.createAgent"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiFrontmatterStudio",
+          "title": "Copilot Assets",
+          "icon": "media/copilot-assets.svg"
+        }
+      ]
+    },
+    "views": {
+      "aiFrontmatterStudio": [
+        {
+          "id": "copilotAssets",
+          "name": "Copilot Assets",
+          "contextualTitle": "Copilot Assets"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "aiFrontmatterStudio.openAgent",
+        "title": "Open Agent Form"
+      },
+      {
+        "command": "aiFrontmatterStudio.createAgent",
+        "title": "Create Agent"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "aiFrontmatterStudio.createAgent",
+          "when": "view == copilotAssets",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "displayName": "AI Frontmatter Studio",
+  "publisher": "marrubio",
+  "private": true
+}
