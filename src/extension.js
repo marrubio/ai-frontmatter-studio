@@ -263,13 +263,13 @@ function getAgentEditorHtml(webview, context, state) {
       github: 'https://docs.github.com/en/copilot/reference/custom-agents-configuration',
       vscode: 'https://code.visualstudio.com/docs/agent-customization/custom-agents'
     }
-  });
+  }).replace(/</g, '\\u003c');
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${webview.cspSource};" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Frontmatter Studio</title>
   <style>
@@ -343,6 +343,21 @@ function getAgentEditorHtml(webview, context, state) {
       metadata: 'Arbitrary string annotations supported by GitHub Copilot.',
       description: 'Required summary of what the agent does.'
     };
+    const propertyLabels = {
+      name: 'Name',
+      'argument-hint': 'Argument hint',
+      tools: 'Tools',
+      agents: 'Subagents',
+      model: 'Model',
+      'user-invocable': 'User invocable',
+      'disable-model-invocation': 'Disable model invocation',
+      infer: 'Infer (deprecated)',
+      target: 'Target',
+      'mcp-servers': 'MCP servers',
+      handoffs: 'Handoffs',
+      hooks: 'Hooks',
+      metadata: 'Metadata'
+    };
 
     const optionalKeys = ['name', 'argument-hint', 'tools', 'agents', 'model', 'user-invocable', 'disable-model-invocation', 'infer', 'target', 'mcp-servers', 'handoffs', 'hooks', 'metadata'];
 
@@ -373,7 +388,7 @@ function getAgentEditorHtml(webview, context, state) {
 
     function renderPropertyToggles() {
       propertyToggles.innerHTML = optionalKeys.map((key) => 
-        '<label class="property-toggle"><input type="checkbox" data-toggle="' + key + '" ' + (state.fields[key].enabled ? 'checked' : '') + '> ' + key + '</label>'
+        '<label class="property-toggle"><input type="checkbox" data-toggle="' + key + '" ' + (state.fields[key].enabled ? 'checked' : '') + '> ' + propertyLabels[key] + '</label>'
       ).join('');
 
       propertyToggles.querySelectorAll('[data-toggle]').forEach((checkbox) => {
@@ -658,7 +673,11 @@ async function createAgent(context, provider) {
       return;
     }
   } catch (error) {
-    // File does not exist yet.
+    const message = error instanceof Error ? error.message : '';
+    const notFound = message.toLowerCase().includes('not found') || message.toLowerCase().includes('entrynotfound');
+    if (!notFound) {
+      throw error;
+    }
   }
 
   const initialState = createEmptyState(fileUri.fsPath);

@@ -93,7 +93,15 @@ function parseYamlOrDefault(text, fallback) {
 }
 
 function toYamlBlock(value) {
-  if (value === undefined || value === null || (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)) {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  if (Array.isArray(value)) {
+    return value.length ? YAML.stringify(value).trim() : '[]';
+  }
+
+  if (typeof value === 'object' && Object.keys(value).length === 0) {
     return '';
   }
 
@@ -349,8 +357,8 @@ function buildFrontmatterObject(state) {
           agent: `${item.agent || ''}`.trim(),
           prompt: `${item.prompt || ''}`.trim()
         };
-        if (item.send) {
-          handoff.send = true;
+        if (typeof item.send === 'boolean') {
+          handoff.send = item.send;
         }
         if (`${item.model || ''}`.trim()) {
           handoff.model = `${item.model}`.trim();

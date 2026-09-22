@@ -119,3 +119,19 @@ test('validateState rejects invalid YAML-backed top-level shapes', () => {
   assert.match(message, /hooks must be a YAML object/);
   assert.match(message, /Extra properties must be a YAML object/);
 });
+
+test('serializeAgentDocument preserves explicit false booleans and empty arrays', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.fields['mcp-servers'] = { enabled: true, yamlText: '[]' };
+  state.fields.handoffs = {
+    enabled: true,
+    items: [{ label: 'Next', agent: 'impl', prompt: 'Go', send: false, model: '' }]
+  };
+
+  const serialized = serializeAgentDocument(state);
+  const reparsed = parseAgentDocument(serialized);
+  const frontmatter = buildFrontmatterObject(reparsed);
+
+  assert.deepEqual(frontmatter['mcp-servers'], []);
+  assert.equal(frontmatter.handoffs[0].send, false);
+});
