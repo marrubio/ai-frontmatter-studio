@@ -388,7 +388,10 @@ function getAgentEditorHtml(webview, context, state) {
 
     function renderPropertyToggles() {
       propertyToggles.innerHTML = optionalKeys.map((key) => 
-        '<label class="property-toggle"><input type="checkbox" data-toggle="' + key + '" ' + (state.fields[key].enabled ? 'checked' : '') + '> ' + propertyLabels[key] + '</label>'
+        '<div class="field">'
+          + '<label class="property-toggle" for="toggle-' + key + '"><input id="toggle-' + key + '" aria-describedby="toggle-help-' + key + '" type="checkbox" data-toggle="' + key + '" ' + (state.fields[key].enabled ? 'checked' : '') + '> ' + propertyLabels[key] + '</label>'
+          + '<div class="muted" id="toggle-help-' + key + '">' + propertyDocs[key] + '</div>'
+        + '</div>'
       ).join('');
 
       propertyToggles.querySelectorAll('[data-toggle]').forEach((checkbox) => {
@@ -411,11 +414,11 @@ function getAgentEditorHtml(webview, context, state) {
     function renderHandoffs() {
       const items = state.fields.handoffs.items || [];
       return '<div class="card"><h2>handoffs</h2><div class="muted">' + propertyDocs.handoffs + '</div>' + items.map((item, index) => '<div class="handoff">'
-        + '<div class="field"><label>Label</label><input type="text" data-handoff="label" data-index="' + index + '" value="' + escapeHtml(item.label) + '" /></div>'
-        + '<div class="field"><label>Agent</label><input type="text" data-handoff="agent" data-index="' + index + '" value="' + escapeHtml(item.agent) + '" /></div>'
-        + '<div class="field"><label>Prompt</label><textarea data-handoff="prompt" data-index="' + index + '">' + escapeHtml(item.prompt) + '</textarea></div>'
-        + '<div class="inline"><div class="field"><label>Model</label><input type="text" list="modelOptions" data-handoff="model" data-index="' + index + '" value="' + escapeHtml(item.model) + '" /></div>'
-        + '<label class="property-toggle"><input type="checkbox" data-handoff="send" data-index="' + index + '" ' + (item.send ? 'checked' : '') + '> Auto send</label></div>'
+        + '<div class="field"><label for="handoff-label-' + index + '">Label</label><input id="handoff-label-' + index + '" type="text" data-handoff="label" data-index="' + index + '" value="' + escapeHtml(item.label) + '" /></div>'
+        + '<div class="field"><label for="handoff-agent-' + index + '">Agent</label><input id="handoff-agent-' + index + '" type="text" data-handoff="agent" data-index="' + index + '" value="' + escapeHtml(item.agent) + '" /></div>'
+        + '<div class="field"><label for="handoff-prompt-' + index + '">Prompt</label><textarea id="handoff-prompt-' + index + '" data-handoff="prompt" data-index="' + index + '">' + escapeHtml(item.prompt) + '</textarea></div>'
+        + '<div class="inline"><div class="field"><label for="handoff-model-' + index + '">Model</label><input id="handoff-model-' + index + '" type="text" list="modelOptions" data-handoff="model" data-index="' + index + '" value="' + escapeHtml(item.model) + '" /></div>'
+        + '<label class="property-toggle" for="handoff-send-' + index + '"><input id="handoff-send-' + index + '" type="checkbox" data-handoff="send" data-index="' + index + '" ' + (item.send ? 'checked' : '') + '> Auto send</label></div>'
         + '<button class="secondary" data-remove-handoff="' + index + '">Remove handoff</button>'
         + '</div>').join('')
         + '<button class="secondary" id="addHandoff">Add handoff</button></div>';

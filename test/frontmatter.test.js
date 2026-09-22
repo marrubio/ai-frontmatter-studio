@@ -135,3 +135,16 @@ test('serializeAgentDocument preserves explicit false booleans and empty arrays'
   assert.deepEqual(frontmatter['mcp-servers'], []);
   assert.equal(frontmatter.handoffs[0].send, false);
 });
+
+test('serializeAgentDocument preserves multiple prioritized models', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.fields.model = {
+    enabled: true,
+    items: ['GPT-5 (copilot)', 'Claude Sonnet 4.5 (copilot)']
+  };
+
+  const serialized = serializeAgentDocument(state);
+  const frontmatter = buildFrontmatterObject(parseAgentDocument(serialized));
+
+  assert.deepEqual(frontmatter.model, ['GPT-5 (copilot)', 'Claude Sonnet 4.5 (copilot)']);
+});

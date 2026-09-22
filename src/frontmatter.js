@@ -255,9 +255,10 @@ function validateState(state) {
     }
   }
 
-  if (state.fields.tools.enabled && state.fields.agents.enabled && state.fields.agents.mode === 'selected' && state.fields.agents.items.length > 0) {
+  if (state.fields.tools.enabled && state.fields.agents.enabled && state.fields.agents.mode !== 'none') {
     const selectedTools = state.fields.tools.mode === 'selected' ? state.fields.tools.items : state.fields.tools.mode === 'all' ? ['*'] : [];
-    if (!(selectedTools.includes('*') || selectedTools.includes('agent'))) {
+    const agentsConfigured = state.fields.agents.mode === 'all' || state.fields.agents.items.length > 0;
+    if (agentsConfigured && !(selectedTools.includes('*') || selectedTools.includes('agent'))) {
       errors.push('When agents are configured, tools must include the agent tool or allow all tools.');
     }
   }
