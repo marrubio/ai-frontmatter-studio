@@ -2,10 +2,95 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   parseAgentDocument,
+  parseSkillDocument,
+  serializeSkillDocument,
+  buildSkillFrontmatterObject,
+  parsePromptDocument,
+  serializePromptDocument,
+  buildPromptFrontmatterObject,
   serializeAgentDocument,
   buildFrontmatterObject,
   validateState
 } = require('../src/frontmatter');
+
+test('parseSkillDocument loads documented fields and preserves unknown properties', () => {
+  const state = parseSkillDocument(`---
+name: pdf-processing
+description: Extract text from PDF files
+license: MIT
+---
+# Instructions
+`, '/workspace/.github/skills/pdf-processing/SKILL.md');
+
+  assert.equal(state.fields.name.value, 'pdf-processing');
+  assert.equal(state.fields.description.value, 'Extract text from PDF files');
+  assert.match(state.extraPropertiesYaml, /license/);
+  assert.match(state.body, /Instructions/);
+});
+
+test('serializeSkillDocument omits optional name and preserves extra properties', () => {
+  const state = parseSkillDocument('---\ndescription: Original\n---\nBody');
+  state.fields.name = { enabled: true, value: '' };
+  state.fields.description.value = 'Updated skill';
+  state.extraPropertiesYaml = 'license: MIT';
+  state.body = '# Workflow';
+
+  const serialized = serializeSkillDocument(state);
+  const frontmatter = buildSkillFrontmatterObject(parseSkillDocument(serialized));
+
+  assert.equal(frontmatter.description, 'Updated skill');
+  assert.equal('name' in frontmatter, false);
+  assert.equal(frontmatter.license, 'MIT');
+  assert.match(serialized, /# Workflow/);
+});
+
+test('parsePromptDocument loads all documented prompt fields', () => {
+  const state = parsePromptDocument(`---
+description: Review a change
+name: review-change
+argument-hint: Add the files to review
+agent: plan
+model:
+  - GPT-5 (copilot)
+  - Claude Sonnet 4.5 (copilot)
+tools:
+  - read
+  - search
+custom-flag: true
+---
+# Review
+`, '/workspace/.github/prompts/review-change.prompt.md');
+
+  assert.equal(state.fields.description.value, 'Review a change');
+  assert.equal(state.fields.name.value, 'review-change');
+  assert.equal(state.fields['argument-hint'].value, 'Add the files to review');
+  assert.equal(state.fields.agent.value, 'plan');
+  assert.deepEqual(state.fields.model.items, ['GPT-5 (copilot)', 'Claude Sonnet 4.5 (copilot)']);
+  assert.deepEqual(state.fields.tools.items, ['read', 'search']);
+  assert.match(state.extraPropertiesYaml, /custom-flag/);
+});
+
+test('serializePromptDocument preserves optional prompt metadata and body', () => {
+  const state = parsePromptDocument('---\ndescription: Review\n---\nBody');
+  state.fields.name = { enabled: true, value: 'review' };
+  state.fields['argument-hint'] = { enabled: true, value: 'Describe the change' };
+  state.fields.agent = { enabled: true, value: 'agent' };
+  state.fields.model = { enabled: true, items: ['GPT-5 (copilot)'] };
+  state.fields.tools = { enabled: true, items: ['read', 'search'] };
+  state.extraPropertiesYaml = 'custom-flag: true';
+  state.body = '# Instructions';
+
+  const serialized = serializePromptDocument(state);
+  const frontmatter = buildPromptFrontmatterObject(parsePromptDocument(serialized));
+
+  assert.equal(frontmatter.name, 'review');
+  assert.equal(frontmatter['argument-hint'], 'Describe the change');
+  assert.equal(frontmatter.agent, 'agent');
+  assert.equal(frontmatter.model, 'GPT-5 (copilot)');
+  assert.deepEqual(frontmatter.tools, ['read', 'search']);
+  assert.equal(frontmatter['custom-flag'], true);
+  assert.match(serialized, /# Instructions/);
+});
 
 test('parseAgentDocument loads official and extended properties', () => {
   const input = `---

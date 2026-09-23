@@ -6,7 +6,7 @@ const CATEGORY_DEFINITIONS = [
     key: 'agents',
     label: 'Agents',
     icon: 'hubot',
-    patterns: ['.github/agents/**/*.agent.md', '.agents/**/*.agent.md', '.claude/agents/**/*.md'],
+    patterns: ['.github/agents/**/*.agent.md', '.agents/**/*.agent.md', '.claude/agents/**/*.md', '.copilot/agents/**/*.md'],
     editable: true,
     openCommand: 'aiFrontmatterStudio.openAgent'
   },
@@ -14,8 +14,9 @@ const CATEGORY_DEFINITIONS = [
     key: 'skills',
     label: 'Skills',
     icon: 'library',
-    patterns: ['.github/skills/**/SKILL.md', '.claude/skills/**/SKILL.md'],
-    editable: false
+    patterns: ['.github/skills/**/SKILL.md', '.claude/skills/**/SKILL.md', '.copilot/skills/**/*.md'],
+    editable: true,
+    openCommand: 'aiFrontmatterStudio.openSkill'
   },
   {
     key: 'instructions',
@@ -28,8 +29,9 @@ const CATEGORY_DEFINITIONS = [
     key: 'prompts',
     label: 'Prompts',
     icon: 'comment-discussion',
-    patterns: ['.github/prompts/**/*.prompt.md'],
-    editable: false
+    patterns: ['.github/prompts/**/*.prompt.md', '.copilot/prompts/**/*.md'],
+    editable: true,
+    openCommand: 'aiFrontmatterStudio.openPrompt'
   },
   {
     key: 'mcp',
@@ -133,12 +135,12 @@ class CopilotAssetsProvider {
         description: path.dirname(relativePath) === '.' ? '' : path.dirname(relativePath),
         nodeType: 'file',
         categoryKey: category.key,
-        contextValue: category.editable ? 'agentFile' : 'file',
+        contextValue: category.editable ? `${category.key}File` : 'file',
         resourceUri: resource,
         iconPath: new vscode.ThemeIcon(category.editable ? 'file-code' : 'file'),
         tooltip: relativePath,
         command: category.editable
-          ? { command: category.openCommand, title: 'Open Agent Form', arguments: [resource] }
+          ? { command: category.openCommand, title: `Open ${category.label.slice(0, -1)} Form`, arguments: [resource] }
           : { command: 'vscode.open', title: 'Open File', arguments: [resource] }
       });
     });

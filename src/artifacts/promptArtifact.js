@@ -3,17 +3,17 @@ const vscode = require('vscode');
 const {
   BUILT_IN_TOOL_ALIASES,
   MODEL_OPTIONS,
-  createEmptyState,
-  parseAgentDocument,
-  serializeAgentDocument,
-  validateState
+  createEmptyPromptState,
+  parsePromptDocument,
+  serializePromptDocument,
+  validatePromptState
 } = require('../frontmatter');
 
-const agentArtifact = {
-  key: 'agent',
-  title: 'Agent',
-  description: 'Visual editor for *.agent.md frontmatter.',
-  rendererPath: path.join('media', 'artifacts', 'agent', 'editor.js'),
+const promptArtifact = {
+  key: 'prompt',
+  title: 'Prompt',
+  description: 'Visual editor for *.prompt.md frontmatter.',
+  rendererPath: path.join('media', 'artifacts', 'prompt', 'editor.js'),
   initialData: {
     toolAliases: BUILT_IN_TOOL_ALIASES,
     modelOptions: MODEL_OPTIONS
@@ -32,20 +32,20 @@ const agentArtifact = {
     };
   },
   parse(content, filePath) {
-    return parseAgentDocument(content, filePath);
+    return parsePromptDocument(content, filePath);
   },
   serialize(state) {
-    return serializeAgentDocument(state);
+    return serializePromptDocument(state);
   },
   validate(state) {
-    return validateState(state);
+    return validatePromptState(state);
   },
   createState(filePath) {
-    return createEmptyState(filePath);
+    return createEmptyPromptState(filePath);
   },
   createContent(state) {
-    return serializeAgentDocument(state);
+    return serializePromptDocument(state);
   }
 };
 
-module.exports = agentArtifact;
+module.exports = promptArtifact;
