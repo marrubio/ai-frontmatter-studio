@@ -40,7 +40,8 @@ async function getArtifactEditorHtml(context, webview, artifact, state) {
   ]);
   const nonce = getNonce();
   const title = escapeHtml(getDisplayTitle(artifact, state));
-  const initial = serializeState({ state, ...artifact.initialData });
+  const artifactData = typeof artifact.getInitialData === 'function' ? await artifact.getInitialData() : artifact.initialData;
+  const initial = serializeState({ state, ...artifactData });
   const script = `const initial = JSON.parse(document.getElementById('initial-state').textContent);\n${renderer}`;
 
   return template

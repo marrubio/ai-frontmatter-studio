@@ -81,8 +81,16 @@ function updateTitle(name) {
 function listCard(key, title, modes) {
   const field = state.fields[key];
   const mode = modes ? '<div class="field"><label>Mode</label><select data-mode="' + key + '">' + modes.map((item) => '<option value="' + item.value + '" ' + (field.mode === item.value ? 'selected' : '') + '>' + item.label + '</option>').join('') + '</select></div>' : '';
-  const rows = !modes || field.mode === 'selected' ? (field.items || []).map((item, index) => '<div class="list-row"><input data-list="' + key + '" data-index="' + index + '" value="' + escapeHtml(item) + '"><button class="secondary" data-remove="' + key + '" data-index="' + index + '">Remove</button></div>').join('') + '<button class="secondary" data-add="' + key + '">Add</button>' : '';
+  const rows = !modes || field.mode === 'selected' ? (field.items || []).map((item, index) => '<div class="list-row">' + (key === 'model' ? modelSelect(item, index) : '<input data-list="' + key + '" data-index="' + index + '" value="' + escapeHtml(item) + '">') + '<button class="secondary" data-remove="' + key + '" data-index="' + index + '">Remove</button></div>').join('') + '<button class="secondary" data-add="' + key + '">Add</button>' : '';
   return fieldCard(title, mode + '<div class="field">' + rows + '</div>', help[key]);
+}
+
+function modelSelect(value, index) {
+  const options = Array.isArray(initial.modelOptions) ? initial.modelOptions.slice() : [];
+  if (value && !options.includes(value)) {
+    options.unshift(value);
+  }
+  return '<select data-list="model" data-index="' + index + '" aria-label="Model">' + options.map((option) => '<option value="' + escapeHtml(option) + '" ' + (option === value ? 'selected' : '') + '>' + escapeHtml(option) + '</option>').join('') + '</select>';
 }
 
 function pairsCard(key, title) {

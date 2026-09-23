@@ -9,6 +9,8 @@ Esta base contiene una extensión mínima de Visual Studio Code que:
 - descubre assets de Copilot/Agent Customizations en el workspace
 - muestra un árbol lateral **Copilot Assets** con Agents, Skills, Instructions, Prompts, MCP Servers y Plugins
 - permite crear y editar archivos `*.agent.md` mediante un formulario visual
+- permite crear y editar archivos `SKILL.md` mediante un formulario visual
+- permite crear y editar archivos `*.prompt.md` mediante un formulario visual
 - soporta las propiedades documentadas oficialmente para el frontmatter de agentes:
   - `name`
   - `description`
@@ -25,6 +27,19 @@ Esta base contiene una extensión mínima de Visual Studio Code que:
   - `hooks` (preview)
   - `metadata`
 - conserva propiedades extra mediante un bloque avanzado de YAML
+
+El campo `model` se edita mediante un selector. La lista predeterminada se puede
+personalizar en la configuración de VS Code con `aiFrontmatterStudio.modelOptions`,
+por ejemplo:
+
+```json
+{
+  "aiFrontmatterStudio.modelOptions": [
+    "GPT-5 (copilot)",
+    "Claude Sonnet 4.5 (copilot)"
+  ]
+}
+```
 
 ## Scripts
 
@@ -69,3 +84,5 @@ La extensión no requiere un paso de compilación. `npm install` es necesario po
 
 - GitHub Copilot custom agents: https://docs.github.com/en/copilot/reference/custom-agents-configuration
 - VS Code custom agents: https://code.visualstudio.com/docs/agent-customization/custom-agents
+- GitHub Copilot agent skills: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
+- VS Code prompt files: https://code.visualstudio.com/docs/agent-customization/prompt-files

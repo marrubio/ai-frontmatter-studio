@@ -5,7 +5,7 @@
   "main": "src/extension.js",
   "scripts": {
     "test": "node --test",
-    "lint": "node --check src/extension.js && node --check src/frontmatter.js && node --check src/assets/assetProvider.js && node --check src/artifacts/agentArtifact.js && node --check src/editors/artifactEditor.js && node --check src/editors/agentEditor.js && node --check test/frontmatter.test.js && node --check media/artifacts/agent/editor.js"
+    "lint": "node --check src/extension.js && node --check src/frontmatter.js && node --check src/assets/assetProvider.js && node --check src/artifacts/agentArtifact.js && node --check src/artifacts/skillArtifact.js && node --check src/artifacts/promptArtifact.js && node --check src/editors/artifactEditor.js && node --check src/editors/agentEditor.js && node --check src/editors/skillEditor.js && node --check src/editors/promptEditor.js && node --check src/editors/frontmatterEditor.js && node --check test/frontmatter.test.js && node --check media/artifacts/agent/editor.js && node --check media/artifacts/skill/editor.js && node --check media/artifacts/prompt/editor.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,12 @@
   "activationEvents": [
     "onView:copilotAssets",
     "onCommand:aiFrontmatterStudio.openAgent",
-    "onCommand:aiFrontmatterStudio.createAgent"
+    "onCommand:aiFrontmatterStudio.createAgent",
+    "onCommand:aiFrontmatterStudio.openSkill",
+    "onCommand:aiFrontmatterStudio.createSkill",
+    "onCommand:aiFrontmatterStudio.openPrompt",
+    "onCommand:aiFrontmatterStudio.createPrompt",
+    "onCommand:aiFrontmatterStudio.openFrontmatter"
   ],
   "contributes": {
     "viewsContainers": {
@@ -56,16 +61,98 @@
       {
         "command": "aiFrontmatterStudio.createAgent",
         "title": "Create Agent"
+      },
+      {
+        "command": "aiFrontmatterStudio.openSkill",
+        "title": "Open Skill Form"
+      },
+      {
+        "command": "aiFrontmatterStudio.createSkill",
+        "title": "Create Skill"
+      },
+      {
+        "command": "aiFrontmatterStudio.openPrompt",
+        "title": "Open Prompt Form"
+      },
+      {
+        "command": "aiFrontmatterStudio.createPrompt",
+        "title": "Create Prompt"
+      },
+      {
+        "command": "aiFrontmatterStudio.openFrontmatter",
+        "title": "Frontmatter View"
       }
     ],
     "menus": {
+      "explorer/context": [
+        {
+          "command": "aiFrontmatterStudio.openFrontmatter",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "aiFrontmatterStudio.openFrontmatter",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "aiFrontmatterStudio.openFrontmatter",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
       "view/title": [
         {
           "command": "aiFrontmatterStudio.createAgent",
           "when": "view == copilotAssets",
           "group": "navigation"
+        },
+        {
+          "command": "aiFrontmatterStudio.createSkill",
+          "when": "view == copilotAssets",
+          "group": "navigation"
+        },
+        {
+          "command": "aiFrontmatterStudio.createPrompt",
+          "when": "view == copilotAssets",
+          "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "AI Frontmatter Studio",
+      "properties": {
+        "aiFrontmatterStudio.modelOptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Claude Opus 4.5 (copilot)",
+            "Claude Sonnet 4.5 (copilot)",
+            "GPT-5 (copilot)",
+            "GPT-5.2 (copilot)",
+            "GPT-5.6 Luna (copilot)",
+            "GPT-5.6 Terra (copilot)",
+            "GPT-5.6 Sol (copilot)",
+            "Kimi K2.7 Code (copilot)",
+            "Kimi K3 (copilot)",
+            "MAI-Code-1.1-Flash (copilot)",
+            "Grok 4.5 (copilot)",
+            "Grok 4.6 (copilot)",
+            "Gemini 3.5 Flash (copilot)",
+            "Gemini 3.6 Flash (copilot)",
+            "Gemini 3.7 Flash (copilot)",
+            "Gemini 3.8 Flash (copilot)",
+            "Gemini 2.5 Pro (copilot)"
+          ],
+          "description": "Models offered by the agent editor. Use the model names supported by your Copilot subscription."
+        }
+      }
     }
   },
   "displayName": "AI Frontmatter Studio",
