@@ -427,6 +427,33 @@ function validateState(state) {
   return errors;
 }
 
+function getAgentDiagnostics(state) {
+  if (state.validationError) {
+    return { errors: [`Invalid frontmatter YAML: ${state.validationError} Repair the source file and reopen the form.`], warnings: [] };
+  }
+
+  const errors = validateState(state);
+  const warnings = [];
+  if (!state.hasFrontmatter) {
+    warnings.push('No YAML frontmatter found. Saving will create one.');
+  }
+
+  if (!errors.some((error) => error.startsWith('Invalid extra properties YAML:'))) {
+    const extra = parseYamlOrDefault(state.extraPropertiesYaml, {});
+    if (extra && typeof extra === 'object' && !Array.isArray(extra)) {
+      for (const key of Object.keys(extra)) {
+        warnings.push(`Unknown frontmatter property: ${key}. Check that the target environment supports it.`);
+      }
+    }
+  }
+
+  if ((!state.fields.target.enabled || state.fields.target.value !== 'vscode') && (state.body || '').length > 30000) {
+    warnings.push(`Agent instructions exceed GitHub Copilot cloud's 30,000-character limit (${(state.body || '').length} characters). Shorten the Markdown body for cloud use.`);
+  }
+
+  return { errors, warnings };
+}
+
 function validateSkillState(state) {
   const errors = [];
 
@@ -674,6 +701,7 @@ module.exports = {
   buildSkillFrontmatterObject,
   buildPromptFrontmatterObject,
   validateState,
+  getAgentDiagnostics,
   validateSkillState,
   validatePromptState
 };

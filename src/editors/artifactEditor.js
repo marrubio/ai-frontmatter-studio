@@ -1,6 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 const vscode = require('vscode');
+const { estimateTokenBreakdown, estimateArtifactTokens } = require('../tokenEstimate');
 
 async function readResource(context, resourcePath) {
   return fs.readFile(path.join(context.extensionPath, resourcePath), 'utf8');
@@ -32,17 +33,18 @@ function getDisplayTitle(artifact, state) {
   return fileName || artifact.title;
 }
 
-async function getArtifactEditorHtml(context, webview, artifact, state) {
-  const [template, styles, renderer] = await Promise.all([
+async function getArtifactEditorHtml(context, webview, artifact, state, fileContent) {
+  const [template, styles, renderer, tokenCounter] = await Promise.all([
     readResource(context, path.join('media', 'webview', 'index.html')),
     readResource(context, path.join('media', 'webview', 'common.css')),
-    readResource(context, artifact.rendererPath)
+    readResource(context, artifact.rendererPath),
+    readResource(context, path.join('media', 'webview', 'tokenCounter.js'))
   ]);
   const nonce = getNonce();
   const title = escapeHtml(getDisplayTitle(artifact, state));
   const artifactData = typeof artifact.getInitialData === 'function' ? await artifact.getInitialData() : artifact.initialData;
-  const initial = serializeState({ state, ...artifactData });
-  const script = `const initial = JSON.parse(document.getElementById('initial-state').textContent);\n${renderer}`;
+  const initial = serializeState({ state, tokenEstimate: fileContent === undefined ? estimateArtifactTokens(artifact, state) : estimateTokenBreakdown(fileContent, state.body), diagnostics: artifact.getDiagnostics?.(state), ...artifactData });
+  const script = `const initial = JSON.parse(document.getElementById('initial-state').textContent);\n${renderer}\n${tokenCounter}`;
 
   return template
     .replaceAll('{{TITLE}}', title)
@@ -74,7 +76,7 @@ async function openArtifactEditor(context, uri, provider, artifact) {
   );
 
   try {
-    panel.webview.html = await getArtifactEditorHtml(context, panel.webview, artifact, state);
+    panel.webview.html = await getArtifactEditorHtml(context, panel.webview, artifact, state, fileContent);
   } catch (error) {
     vscode.window.showErrorMessage(error instanceof Error ? error.message : 'Failed to render artifact editor');
     panel.dispose();
@@ -82,6 +84,21 @@ async function openArtifactEditor(context, uri, provider, artifact) {
   }
 
   panel.webview.onDidReceiveMessage(async (message) => {
+    if (message?.type === 'estimateTokens') {
+      panel.webview.postMessage({ type: 'tokenEstimate', revision: message.revision, count: estimateArtifactTokens(artifact, message.state) });
+      return;
+    }
+
+    if (message?.type === 'diagnose' && artifact.getDiagnostics) {
+      panel.webview.postMessage({ type: 'diagnostics', revision: message.revision, diagnostics: artifact.getDiagnostics(message.state) });
+      return;
+    }
+
+    if (message?.type === 'openSource' && artifact.getDiagnostics) {
+      await vscode.window.showTextDocument(uri);
+      return;
+    }
+
     if (message?.type === 'openDoc') {
       if (message.url) {
         await vscode.env.openExternal(vscode.Uri.parse(message.url));
@@ -96,14 +113,17 @@ async function openArtifactEditor(context, uri, provider, artifact) {
     try {
       const errors = artifact.validate(message.state);
       if (errors.length) {
+        panel.webview.postMessage({ type: 'saveResult', error: errors.join(' ') });
         vscode.window.showErrorMessage(errors.join(' '));
         return;
       }
 
       await vscode.workspace.fs.writeFile(uri, Buffer.from(artifact.serialize(message.state), 'utf8'));
       provider.refresh();
+      panel.webview.postMessage({ type: 'saveResult' });
       vscode.window.showInformationMessage(`Saved ${path.basename(uri.fsPath)}`);
     } catch (error) {
+      panel.webview.postMessage({ type: 'saveResult', error: error instanceof Error ? error.message : 'Failed to save artifact' });
       vscode.window.showErrorMessage(error instanceof Error ? error.message : 'Failed to save artifact');
     }
   });

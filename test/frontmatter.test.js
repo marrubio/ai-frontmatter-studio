@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   parseAgentDocument,
+  getAgentDiagnostics,
   parseSkillDocument,
   serializeSkillDocument,
   buildSkillFrontmatterObject,
@@ -293,4 +294,41 @@ test('serializeAgentDocument omits empty optional object and array properties', 
   assert.equal('mcp-servers' in frontmatter, false);
   assert.equal('hooks' in frontmatter, false);
   assert.equal('metadata' in frontmatter, false);
+});
+
+test('agent diagnostics report invalid source YAML without treating it as a clean form', () => {
+  const state = parseAgentDocument('---\ndescription: [broken\n---\nInstructions');
+  const diagnostics = getAgentDiagnostics(state);
+
+  assert.match(diagnostics.errors.join(' '), /Invalid frontmatter YAML/);
+  assert.equal(diagnostics.warnings.length, 0);
+});
+
+test('agent diagnostics distinguish validation errors from unknown-property advice', () => {
+  const state = parseAgentDocument('---\ndescription: Test\nfuture-option: true\n---\nInstructions');
+  state.fields.description.value = '';
+  state.fields.hooks = { enabled: true, yamlText: '[]' };
+
+  const diagnostics = getAgentDiagnostics(state);
+
+  assert.match(diagnostics.errors.join(' '), /Description is required/);
+  assert.match(diagnostics.errors.join(' '), /hooks must be a YAML object/);
+  assert.match(diagnostics.warnings.join(' '), /future-option/);
+});
+
+test('agent diagnostics warn about GitHub cloud body limit only when cloud can be targeted', () => {
+  const state = parseAgentDocument('---\ndescription: Test\n---\n');
+  state.body = 'a'.repeat(30001);
+
+  assert.match(getAgentDiagnostics(state).warnings.join(' '), /30,000-character limit/);
+  state.fields.target = { enabled: true, value: 'vscode' };
+  assert.equal(getAgentDiagnostics(state).warnings.length, 0);
+  state.fields.target.value = 'github-copilot';
+  assert.match(getAgentDiagnostics(state).warnings.join(' '), /30,000-character limit/);
+});
+
+test('agent diagnostics explain when frontmatter will be created', () => {
+  const state = parseAgentDocument('Just instructions');
+
+  assert.match(getAgentDiagnostics(state).warnings.join(' '), /No YAML frontmatter found/);
 });
