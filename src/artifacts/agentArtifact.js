@@ -6,7 +6,7 @@ const {
   createEmptyState,
   parseAgentDocument,
   serializeAgentDocument,
-  validateState
+  getAgentDiagnostics
 } = require('../frontmatter');
 
 const agentArtifact = {
@@ -38,7 +38,10 @@ const agentArtifact = {
     return serializeAgentDocument(state);
   },
   validate(state) {
-    return validateState(state);
+    return getAgentDiagnostics(state).errors;
+  },
+  getDiagnostics(state) {
+    return getAgentDiagnostics(state);
   },
   createState(filePath) {
     return createEmptyState(filePath);

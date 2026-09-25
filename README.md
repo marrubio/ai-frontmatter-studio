@@ -1,17 +1,19 @@
-# ai-frontmatter-studio
+# 🤖 ai-frontmatter-studio
 
-Editar visualmente el FrontMatter YAML de artefactos de IA.
+Visually edit the YAML frontmatter of AI artifacts.
 
-## MVP actual
+## 🚀 Current MVP
 
-Esta base contiene una extensión mínima de Visual Studio Code que:
+This project contains a minimal Visual Studio Code extension that:
 
-- descubre assets de Copilot/Agent Customizations en el workspace
-- muestra un árbol lateral **Copilot Assets** con Agents, Skills, Instructions, Prompts, MCP Servers y Plugins
-- permite crear y editar archivos `*.agent.md` mediante un formulario visual
-- permite crear y editar archivos `SKILL.md` mediante un formulario visual
-- permite crear y editar archivos `*.prompt.md` mediante un formulario visual
-- soporta las propiedades documentadas oficialmente para el frontmatter de agentes:
+- discovers Copilot/Agent Customizations assets in the workspace
+- displays a **Copilot Assets** sidebar tree with Agents, Skills, Instructions, Prompts, MCP Servers, and Plugins
+- lets you create and edit `*.agent.md` files through a visual form
+- shows collapsible, live validation and advice in the agent form (including YAML errors, unknown properties, and GitHub cloud's 30,000-character instruction limit)
+- shows separate approximate token counts for YAML frontmatter and Markdown, plus their total, in agent, prompt, and skill forms; each section uses UTF-8 bytes / 4 (rounded up), not a model-specific bill or total conversation cost
+- lets you create and edit `SKILL.md` files through a visual form
+- lets you create and edit `*.prompt.md` files through a visual form
+- supports the officially documented properties for agent frontmatter:
   - `name`
   - `description`
   - `argument-hint`
@@ -26,11 +28,10 @@ Esta base contiene una extensión mínima de Visual Studio Code que:
   - `handoffs`
   - `hooks` (preview)
   - `metadata`
-- conserva propiedades extra mediante un bloque avanzado de YAML
+- preserves extra properties through an advanced YAML block
 
-El campo `model` se edita mediante un selector. La lista predeterminada se puede
-personalizar en la configuración de VS Code con `aiFrontmatterStudio.modelOptions`,
-por ejemplo:
+The `model` field is edited through a selector. The default list can be customized
+in VS Code settings with `aiFrontmatterStudio.modelOptions`, for example:
 
 ```json
 {
@@ -41,24 +42,24 @@ por ejemplo:
 }
 ```
 
-## Scripts
+## 🧪 Scripts
 
 ```bash
 npm test
 npm run lint
 ```
 
-## Probar la extensión en Visual Studio Code
+## 🛠️ Test the extension in Visual Studio Code
 
-1. Instala las dependencias desde la terminal integrada:
+1. Install the dependencies from the integrated terminal:
 
   ```bash
   npm install
   ```
 
-2. Pulsa `F5` o abre **Run and Debug** y selecciona **Run Extension**. VS Code abrirá una ventana **Extension Development Host** con la extensión cargada.
+2. Press `F5`, or open **Run and Debug** and select **Run Extension**. VS Code will open an **Extension Development Host** window with the extension loaded.
 
-3. En la ventana de desarrollo, crea un archivo `.github/agents/test.agent.md` con este contenido:
+3. In the development window, create a `.github/agents/test.agent.md` file with the following content:
 
   ```markdown
   ---
@@ -72,16 +73,19 @@ npm run lint
   You are a test agent.
   ```
 
-4. Abre la vista **Copilot Assets** en la barra de actividad. El archivo debe aparecer dentro de **Agents**.
+4. Open the **Copilot Assets** view in the activity bar. The file should appear under **Agents**.
 
-5. Haz clic en el agente para abrir el editor visual, modifica un campo y pulsa **Save**. Comprueba que el archivo Markdown se actualizó.
+5. Click the agent to open the visual editor, modify a field, and click **Save**. Verify that the Markdown file was updated.
 
-Para depurar la extensión, coloca puntos de interrupción en `src/extension.js` y recarga la ventana **Extension Development Host** con `Ctrl+R`.
+To debug the extension, set breakpoints in `src/extension.js` and reload the **Extension Development Host** window with `Ctrl+R`.
 
-La extensión no requiere un paso de compilación. `npm install` es necesario porque el parser utiliza el paquete `yaml`.
+The extension does not require a build step. `npm install` is required because the parser uses the `yaml` package.
 
-## Referencias
+## References
 
+- Repository: https://github.com/marrubio/ai-frontmatter-studio
+- VS Code extension documentation: https://code.visualstudio.com/api
+- Publishing VS Code extensions: https://code.visualstudio.com/api/working-with-extensions/publishing-extension
 - GitHub Copilot custom agents: https://docs.github.com/en/copilot/reference/custom-agents-configuration
 - VS Code custom agents: https://code.visualstudio.com/docs/agent-customization/custom-agents
 - GitHub Copilot agent skills: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
