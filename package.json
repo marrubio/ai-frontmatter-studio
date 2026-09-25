@@ -1,6 +1,6 @@
 {
   "name": "ai-frontmatter-studio",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Visual editor for AI agent frontmatter in Markdown, YAML, and JSON files.",
   "main": "src/extension.js",
   "scripts": {
